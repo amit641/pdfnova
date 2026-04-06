@@ -2,6 +2,8 @@
 
 **PDFium-powered PDF library for JavaScript.** Chrome-grade rendering via WebAssembly with full TypeScript types. Supports text extraction, search, bookmarks, annotations, forms, and digital signatures.
 
+Built on [`@embedpdf/pdfium`](https://www.npmjs.com/package/@embedpdf/pdfium) — the real PDFium engine (used in Chrome) compiled to WebAssembly.
+
 ## Installation
 
 ```bash
@@ -12,7 +14,8 @@ npm install pdfnova
 
 |                          | pdfnova/lite | pdfnova (full) |
 | ------------------------ | ------------ | -------------- |
-| **Size (Brotli)**        | ~710KB       | ~1.3MB         |
+| **JS Bundle (minified)** | ~3KB         | ~5KB           |
+| **WASM Binary**          | ~7MB (shared, loaded once from CDN) | |
 | Rendering                | Yes          | Yes            |
 | Text extraction          | Yes          | Yes            |
 | Text layer (DOM)         | Yes          | Yes            |
@@ -24,6 +27,8 @@ npm install pdfnova
 | Form filling/flattening  | —            | Yes            |
 | Digital signatures       | —            | Yes            |
 | doc.save()               | —            | Yes            |
+
+> The WASM binary is fetched once from CDN (`cdn.jsdelivr.net`) and cached by the browser. Both tiers share the same binary — the lite/full distinction controls which TypeScript API features are available.
 
 ```typescript
 // Lightweight — render, text, search, bookmarks
@@ -254,15 +259,15 @@ const doc = await PDFDocument.open(encryptedPdf, {
 
 ## Custom WASM URL
 
-Host the WASM binary on your own CDN:
+By default, pdfnova loads the PDFium WASM binary from jsDelivr CDN. To self-host:
 
 ```typescript
-import { WasmLoader } from "pdfnova/lite";
-
 const doc = await PDFDocument.open(data, {
-  wasmUrl: "https://cdn.example.com/pdfium-lite.wasm",
+  wasmUrl: "https://cdn.example.com/pdfium.wasm",
 });
 ```
+
+You can get the WASM binary from `node_modules/@embedpdf/pdfium/dist/pdfium.wasm` and serve it from your own infrastructure.
 
 ## API Reference
 
@@ -303,13 +308,25 @@ const doc = await PDFDocument.open(data, {
 | `.removeAnnotation(index)`     | Remove annotation (full tier)  |
 | `.close()`                     | Free page resources            |
 
-## Building the WASM Binary
+## How WASM Loading Works
+
+pdfnova uses [`@embedpdf/pdfium`](https://www.npmjs.com/package/@embedpdf/pdfium) for the pre-built PDFium WebAssembly binary. No manual compilation is needed.
+
+1. On first use, `WasmLoader` fetches `pdfium.wasm` (~7MB) from CDN
+2. The browser caches it — subsequent page loads are instant
+3. The module is initialized via `PDFiumExt_Init()` and adapted to pdfnova's typed interface
+4. All downstream API calls go through the real PDFium C engine via the WASM bridge
+
+To override the WASM URL (e.g., for air-gapped environments), pass `wasmUrl` in `PDFDocument.open()` options.
+
+## Development
 
 ```bash
-# Prerequisites: Emscripten SDK, depot_tools
-bash wasm/build.sh          # Build both lite and full
-bash wasm/build.sh lite     # Build lite only
-bash wasm/build.sh full     # Build full only
+npm install          # Install dependencies
+npm run build        # TypeScript check + tsup build
+npm test             # Run all 71 tests
+npm run test:watch   # Watch mode
+npm run test:coverage # With V8 coverage report
 ```
 
 ## License
