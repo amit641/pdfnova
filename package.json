@@ -1,0 +1,65 @@
+{
+  "name": "pdfnova",
+  "version": "0.1.0",
+  "description": "PDFium-powered PDF library for JavaScript. Chrome-grade rendering via WebAssembly with full TypeScript types. Supports text extraction, search, bookmarks, annotations, forms, and digital signatures.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./lite": {
+      "types": "./dist/lite.d.ts",
+      "import": "./dist/lite.mjs",
+      "require": "./dist/lite.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --noEmit && tsup",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "wasm:build": "bash wasm/build.sh",
+    "prepublishOnly": "npm run build",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "pdf",
+    "pdfium",
+    "webassembly",
+    "wasm",
+    "pdf-viewer",
+    "pdf-renderer",
+    "text-extraction",
+    "annotations",
+    "forms",
+    "digital-signatures",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amit641/pdfnova.git"
+  },
+  "homepage": "https://github.com/amit641/pdfnova#readme",
+  "bugs": {
+    "url": "https://github.com/amit641/pdfnova/issues"
+  },
+  "author": "Amit Chowdhary",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.6.0",
+    "jsdom": "^24.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0",
+    "vitest": "^1.6.0"
+  }
+}
