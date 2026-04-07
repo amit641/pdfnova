@@ -15,7 +15,7 @@ npm install pdfnova
 |                          | pdfnova/lite | pdfnova (full) |
 | ------------------------ | ------------ | -------------- |
 | **JS Bundle (minified)** | ~3KB         | ~5KB           |
-| **WASM Binary**          | ~7MB (shared, loaded once from CDN) | |
+| **WASM Binary**          | 4.4MB on disk / ~1.5MB over the wire (Brotli) | |
 | Rendering                | Yes          | Yes            |
 | Text extraction          | Yes          | Yes            |
 | Text layer (DOM)         | Yes          | Yes            |
@@ -28,7 +28,7 @@ npm install pdfnova
 | Digital signatures       | —            | Yes            |
 | doc.save()               | —            | Yes            |
 
-> The WASM binary is fetched once from CDN (`cdn.jsdelivr.net`) and cached by the browser. Both tiers share the same binary — the lite/full distinction controls which TypeScript API features are available.
+> The WASM binary is fetched once and cached in IndexedDB — subsequent page loads are instant with zero network cost. Both tiers share the same binary — the lite/full distinction controls which TypeScript API features are available.
 
 ```typescript
 // Lightweight — render, text, search, bookmarks
@@ -312,12 +312,14 @@ You can get the WASM binary from `node_modules/@embedpdf/pdfium/dist/pdfium.wasm
 
 pdfnova uses [`@embedpdf/pdfium`](https://www.npmjs.com/package/@embedpdf/pdfium) for the pre-built PDFium WebAssembly binary. No manual compilation is needed.
 
-1. On first use, `WasmLoader` fetches `pdfium.wasm` (~7MB) from CDN
-2. The browser caches it — subsequent page loads are instant
+1. On first use, `WasmLoader` fetches `pdfium.wasm` (4.4MB) from CDN — ~1.5MB with Brotli compression (standard on CDNs)
+2. The binary is cached in **IndexedDB** — subsequent visits load instantly with zero network cost
 3. The module is initialized via `PDFiumExt_Init()` and adapted to pdfnova's typed interface
 4. All downstream API calls go through the real PDFium C engine via the WASM bridge
 
 To override the WASM URL (e.g., for air-gapped environments), pass `wasmUrl` in `PDFDocument.open()` options.
+
+To clear the cached binary: `WasmLoader.clearCache()`
 
 ## Development
 

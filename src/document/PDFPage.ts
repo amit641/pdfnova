@@ -94,7 +94,8 @@ export class PDFPage {
     canvas.width = renderW;
     canvas.height = renderH;
 
-    const flags = options?.flags ?? (RENDER_FLAG.ANNOT | RENDER_FLAG.LCD_TEXT);
+    const baseFlags = options?.flags ?? (RENDER_FLAG.ANNOT | RENDER_FLAG.LCD_TEXT);
+    const flags = baseFlags | RENDER_FLAG.REVERSE_BYTE_ORDER;
 
     const bitmapHandle = this.wasm._FPDFBitmap_Create(renderW, renderH, 0);
     if (bitmapHandle === 0) throw new Error('Failed to create bitmap');
@@ -115,20 +116,17 @@ export class PDFPage {
       if (!ctx) throw new Error('Failed to get canvas 2D context');
 
       const imageData = ctx.createImageData(renderW, renderH);
-      const src = this.wasm.HEAPU8;
       const dst = imageData.data;
+      const rowBytes = renderW * 4;
 
+      // REVERSE_BYTE_ORDER makes PDFium output RGBA directly — bulk copy per row
       for (let y = 0; y < renderH; y++) {
-        const srcRow = bufferPtr + y * stride;
-        const dstRow = y * renderW * 4;
-        for (let x = 0; x < renderW; x++) {
-          const si = srcRow + x * 4;
-          const di = dstRow + x * 4;
-          // PDFium outputs BGRA, canvas expects RGBA
-          dst[di] = src[si + 2];     // R
-          dst[di + 1] = src[si + 1]; // G
-          dst[di + 2] = src[si];     // B
-          dst[di + 3] = 255;         // A
+        const srcOffset = bufferPtr + y * stride;
+        const dstOffset = y * rowBytes;
+        dst.set(this.wasm.HEAPU8.subarray(srcOffset, srcOffset + rowBytes), dstOffset);
+        // Force full opacity on each pixel (PDFium uses BGRx with alpha=0)
+        for (let x = 3; x < rowBytes; x += 4) {
+          dst[dstOffset + x] = 255;
         }
       }
 
@@ -150,7 +148,8 @@ export class PDFPage {
     const renderW = Math.ceil((isRotated ? this.height : this.width) * scale);
     const renderH = Math.ceil((isRotated ? this.width : this.height) * scale);
 
-    const flags = options?.flags ?? (RENDER_FLAG.ANNOT | RENDER_FLAG.LCD_TEXT);
+    const baseFlags = options?.flags ?? (RENDER_FLAG.ANNOT | RENDER_FLAG.LCD_TEXT);
+    const flags = baseFlags | RENDER_FLAG.REVERSE_BYTE_ORDER;
     const bitmapHandle = this.wasm._FPDFBitmap_Create(renderW, renderH, 0);
     if (bitmapHandle === 0) throw new Error('Failed to create bitmap');
 
@@ -166,18 +165,14 @@ export class PDFPage {
       const bufferPtr = this.wasm._FPDFBitmap_GetBuffer(bitmapHandle);
       const stride = this.wasm._FPDFBitmap_GetStride(bitmapHandle);
       const data = new Uint8ClampedArray(renderW * renderH * 4);
+      const rowBytes = renderW * 4;
 
-      const src = this.wasm.HEAPU8;
       for (let y = 0; y < renderH; y++) {
-        const srcRow = bufferPtr + y * stride;
-        const dstRow = y * renderW * 4;
-        for (let x = 0; x < renderW; x++) {
-          const si = srcRow + x * 4;
-          const di = dstRow + x * 4;
-          data[di] = src[si + 2];
-          data[di + 1] = src[si + 1];
-          data[di + 2] = src[si];
-          data[di + 3] = 255;
+        const srcOffset = bufferPtr + y * stride;
+        const dstOffset = y * rowBytes;
+        data.set(this.wasm.HEAPU8.subarray(srcOffset, srcOffset + rowBytes), dstOffset);
+        for (let x = 3; x < rowBytes; x += 4) {
+          data[dstOffset + x] = 255;
         }
       }
 

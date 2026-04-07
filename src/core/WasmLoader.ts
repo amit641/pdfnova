@@ -1,6 +1,9 @@
 import type { WasmModule, WasmTier } from '../types';
 
-const PDFIUM_WASM_CDN = 'https://cdn.jsdelivr.net/npm/@embedpdf/pdfium/dist/pdfium.wasm';
+const PDFIUM_WASM_CDN = 'https://cdn.jsdelivr.net/npm/@embedpdf/pdfium@2/dist/pdfium.wasm';
+const IDB_NAME = 'pdfnova-cache';
+const IDB_STORE = 'wasm';
+const IDB_KEY = 'pdfium-binary';
 
 let wasmInstance: WasmModule | null = null;
 let initPromise: Promise<WasmModule> | null = null;
@@ -36,6 +39,17 @@ export class WasmLoader {
   static enableMock(): void { forceMock = true; }
   static disableMock(): void { forceMock = false; }
 
+  /** Clear the cached WASM binary from IndexedDB. */
+  static async clearCache(): Promise<void> {
+    try {
+      const db = await WasmLoader._openIDB();
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete(IDB_KEY);
+      await new Promise<void>((res, rej) => { tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); });
+      db.close();
+    } catch { /* IndexedDB not available or failed — ignore */ }
+  }
+
   private static async _doLoad(options?: { wasmUrl?: string; tier?: WasmTier }): Promise<WasmModule> {
     if (forceMock || !WasmLoader._canLoadWasm()) {
       const { createMockModule } = await import('./WasmMock');
@@ -53,17 +67,60 @@ export class WasmLoader {
 
   private static async _loadRealPdfium(options?: { wasmUrl?: string; tier?: WasmTier }): Promise<WasmModule> {
     const wasmUrl = options?.wasmUrl ?? PDFIUM_WASM_CDN;
-
     const { init } = await import('@embedpdf/pdfium');
 
-    const response = await fetch(wasmUrl);
-    if (!response.ok) throw new Error(`Failed to fetch PDFium WASM: ${response.status}`);
-    const wasmBinary = await response.arrayBuffer();
+    let wasmBinary = await WasmLoader._loadFromCache();
+
+    if (!wasmBinary) {
+      const response = await fetch(wasmUrl);
+      if (!response.ok) throw new Error(`Failed to fetch PDFium WASM: ${response.status}`);
+      wasmBinary = await response.arrayBuffer();
+      WasmLoader._saveToCache(wasmBinary).catch(() => {});
+    }
 
     const wrapped = await init({ wasmBinary } as any);
     wrapped.PDFiumExt_Init();
 
     return WasmLoader._adaptModule(wrapped);
+  }
+
+  // ─── IndexedDB WASM cache ────────────────────────────────────
+
+  private static async _openIDB(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => { req.result.createObjectStore(IDB_STORE); };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  private static async _loadFromCache(): Promise<ArrayBuffer | null> {
+    try {
+      if (typeof indexedDB === 'undefined') return null;
+      const db = await WasmLoader._openIDB();
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).get(IDB_KEY);
+      const result = await new Promise<ArrayBuffer | null>((res, rej) => {
+        req.onsuccess = () => res(req.result ?? null);
+        req.onerror = () => rej(req.error);
+      });
+      db.close();
+      return result;
+    } catch {
+      return null;
+    }
+  }
+
+  private static async _saveToCache(binary: ArrayBuffer): Promise<void> {
+    try {
+      if (typeof indexedDB === 'undefined') return;
+      const db = await WasmLoader._openIDB();
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(binary, IDB_KEY);
+      await new Promise<void>((res, rej) => { tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); });
+      db.close();
+    } catch { /* best-effort caching */ }
   }
 
   /**
@@ -77,11 +134,11 @@ export class WasmLoader {
       raw.cwrap(name, ret, args);
 
     const module: WasmModule = {
-      HEAPU8: raw.HEAPU8,
-      HEAPU32: raw.HEAPU32,
-      HEAP32: raw.HEAP32,
-      HEAPF32: raw.HEAPF32,
-      HEAPF64: raw.HEAPF64,
+      get HEAPU8() { return raw.HEAPU8; },
+      get HEAPU32() { return raw.HEAPU32; },
+      get HEAP32() { return raw.HEAP32; },
+      get HEAPF32() { return raw.HEAPF32; },
+      get HEAPF64() { return raw.HEAPF64; },
 
       _malloc: raw.wasmExports.malloc,
       _free: raw.wasmExports.free,

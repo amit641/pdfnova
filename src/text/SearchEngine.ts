@@ -76,22 +76,6 @@ export class SearchEngine {
       if (findHandle === 0) return results;
 
       try {
-        // First result
-        const firstCharIndex = this.wasm._FPDFText_GetSchResultIndex(findHandle);
-        const firstCount = this.wasm._FPDFText_GetSchCount(findHandle);
-
-        if (firstCharIndex >= 0 && firstCount > 0) {
-          results.push({
-            pageIndex,
-            matchIndex: results.length,
-            charIndex: firstCharIndex,
-            charCount: firstCount,
-            rects: this._getMatchRects(textPagePtr, firstCharIndex, firstCount),
-            text: this._getMatchText(textPagePtr, firstCharIndex, firstCount),
-          });
-        }
-
-        // Subsequent results
         while (this.wasm._FPDFText_FindNext(findHandle)) {
           const charIndex = this.wasm._FPDFText_GetSchResultIndex(findHandle);
           const count = this.wasm._FPDFText_GetSchCount(findHandle);
@@ -107,11 +91,8 @@ export class SearchEngine {
             });
           }
         }
-
+      } finally {
         this.wasm._FPDFText_FindClose(findHandle);
-      } catch {
-        this.wasm._FPDFText_FindClose(findHandle);
-        throw new Error('Search failed');
       }
     } finally {
       this.bridge.free(queryPtr);

@@ -39,6 +39,10 @@ export function createMockModule(): WasmModule {
   const bitmaps = new Map<number, { width: number; height: number; buffer: number; stride: number }>();
   let nextBitmapHandle = 10000;
 
+  interface SearchState { tpHandle: number; needle: string; caseSensitive: boolean; pos: number; matchIdx: number; matchLen: number; }
+  const searches = new Map<number, SearchState>();
+  let nextSearchHandle = 20000;
+
   const module: WasmModule = {
     HEAPU8, HEAPU32, HEAP32, HEAPF32, HEAPF64,
     _malloc: malloc,
@@ -138,28 +142,26 @@ export function createMockModule(): WasmModule {
       if (!tp) return 0;
       const query = module.UTF16ToString(findWhat);
       const caseSensitive = (flags & 0x01) !== 0;
-      const text = caseSensitive ? tp.text : tp.text.toLowerCase();
-      const needle = caseSensitive ? query : query.toLowerCase();
-      const idx = text.indexOf(needle, startIndex);
-      const handle = malloc(16);
-      HEAP32[handle >> 2] = idx;
-      HEAP32[(handle + 4) >> 2] = needle.length;
-      HEAP32[(handle + 8) >> 2] = textPage as number;
+      const handle = nextSearchHandle++;
+      searches.set(handle, { tpHandle: textPage, needle: query, caseSensitive, pos: startIndex, matchIdx: -1, matchLen: query.length });
       return handle;
     },
     _FPDFText_FindNext(findHandle: number): number {
-      const curIdx = HEAP32[findHandle >> 2];
-      const len = HEAP32[(findHandle + 4) >> 2];
-      const tpHandle = HEAP32[(findHandle + 8) >> 2];
-      const tp = textPages.get(tpHandle);
-      if (!tp || curIdx < 0) return 0;
-      const next = tp.text.toLowerCase().indexOf(tp.text.toLowerCase().slice(curIdx, curIdx + len).toLowerCase(), curIdx + len);
-      HEAP32[findHandle >> 2] = next;
-      return next >= 0 ? 1 : 0;
+      const state = searches.get(findHandle);
+      if (!state) return 0;
+      const tp = textPages.get(state.tpHandle);
+      if (!tp) return 0;
+      const text = state.caseSensitive ? tp.text : tp.text.toLowerCase();
+      const needle = state.caseSensitive ? state.needle : state.needle.toLowerCase();
+      const idx = text.indexOf(needle, state.pos);
+      if (idx < 0) { state.matchIdx = -1; return 0; }
+      state.matchIdx = idx;
+      state.pos = idx + 1;
+      return 1;
     },
-    _FPDFText_FindClose(_findHandle: number) {},
-    _FPDFText_GetSchResultIndex(findHandle: number): number { return HEAP32[findHandle >> 2]; },
-    _FPDFText_GetSchCount(findHandle: number): number { return HEAP32[(findHandle + 4) >> 2]; },
+    _FPDFText_FindClose(findHandle: number) { searches.delete(findHandle); },
+    _FPDFText_GetSchResultIndex(findHandle: number): number { return searches.get(findHandle)?.matchIdx ?? -1; },
+    _FPDFText_GetSchCount(findHandle: number): number { return searches.get(findHandle)?.matchLen ?? 0; },
     _FPDFText_CountRects(textPage: number, _startIndex: number, _count: number): number { return textPages.has(textPage) ? 1 : 0; },
     _FPDFText_GetRect(textPage: number, _rectIndex: number, leftPtr: number, topPtr: number, rightPtr: number, bottomPtr: number): number {
       if (!textPages.has(textPage)) return 0;
