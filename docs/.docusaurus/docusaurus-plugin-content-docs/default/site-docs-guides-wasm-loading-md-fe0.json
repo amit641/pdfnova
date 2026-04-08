@@ -1,0 +1,28 @@
+{
+  "id": "guides/wasm-loading",
+  "title": "WASM Loading",
+  "description": "pdfnova uses Google's PDFium engine compiled to WebAssembly via @embedpdf/pdfium.",
+  "source": "@site/docs/guides/wasm-loading.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/wasm-loading",
+  "permalink": "/pdfnova/guides/wasm-loading",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amit641/pdfnova/tree/main/docs/docs/guides/wasm-loading.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "sidebar_position": 8,
+    "title": "WASM Loading"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Worker Pool",
+    "permalink": "/pdfnova/guides/worker-pool"
+  },
+  "next": {
+    "title": "API Reference",
+    "permalink": "/pdfnova/api-reference"
+  }
+}

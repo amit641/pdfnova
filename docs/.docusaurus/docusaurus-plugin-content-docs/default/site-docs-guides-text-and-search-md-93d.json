@@ -1,0 +1,28 @@
+{
+  "id": "guides/text-and-search",
+  "title": "Text & Search",
+  "description": "pdfnova uses PDFium's text extraction for character-level precision — the same accuracy as Chrome's \"Find in PDF\" feature.",
+  "source": "@site/docs/guides/text-and-search.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/text-and-search",
+  "permalink": "/pdfnova/guides/text-and-search",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amit641/pdfnova/tree/main/docs/docs/guides/text-and-search.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Text & Search"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Rendering",
+    "permalink": "/pdfnova/guides/rendering"
+  },
+  "next": {
+    "title": "Annotations",
+    "permalink": "/pdfnova/guides/annotations"
+  }
+}

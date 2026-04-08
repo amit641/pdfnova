@@ -1,0 +1,28 @@
+{
+  "id": "getting-started",
+  "title": "Getting Started",
+  "description": "Installation",
+  "source": "@site/docs/getting-started.md",
+  "sourceDirName": ".",
+  "slug": "/getting-started",
+  "permalink": "/pdfnova/getting-started",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amit641/pdfnova/tree/main/docs/docs/getting-started.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Getting Started"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Introduction",
+    "permalink": "/pdfnova/"
+  },
+  "next": {
+    "title": "Rendering",
+    "permalink": "/pdfnova/guides/rendering"
+  }
+}

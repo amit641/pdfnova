@@ -1,0 +1,28 @@
+{
+  "id": "guides/rendering",
+  "title": "Rendering",
+  "description": "pdfnova uses PDFium's native rendering engine — the same one that powers Chrome's built-in PDF viewer.",
+  "source": "@site/docs/guides/rendering.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/rendering",
+  "permalink": "/pdfnova/guides/rendering",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amit641/pdfnova/tree/main/docs/docs/guides/rendering.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Rendering"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Getting Started",
+    "permalink": "/pdfnova/getting-started"
+  },
+  "next": {
+    "title": "Text & Search",
+    "permalink": "/pdfnova/guides/text-and-search"
+  }
+}

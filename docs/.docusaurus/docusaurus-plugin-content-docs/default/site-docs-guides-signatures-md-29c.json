@@ -1,0 +1,28 @@
+{
+  "id": "guides/signatures",
+  "title": "Digital Signatures",
+  "description": "Inspect digital signature data embedded in signed PDFs. Requires the full tier.",
+  "source": "@site/docs/guides/signatures.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/signatures",
+  "permalink": "/pdfnova/guides/signatures",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amit641/pdfnova/tree/main/docs/docs/guides/signatures.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5,
+    "title": "Digital Signatures"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Forms",
+    "permalink": "/pdfnova/guides/forms"
+  },
+  "next": {
+    "title": "Virtual Renderer",
+    "permalink": "/pdfnova/guides/virtual-renderer"
+  }
+}

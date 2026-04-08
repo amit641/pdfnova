@@ -1,10 +1,21 @@
-# pdfnova
+<p align="center">
+  <h1 align="center">pdfnova</h1>
+  <p align="center">
+    <strong>PDFium-powered PDF library for JavaScript & TypeScript.</strong>
+  </p>
+  <p align="center">
+    Chrome-grade rendering via WebAssembly. Full TypeScript types. Zero-config WASM loading.
+  </p>
+  <p align="center">
+    <a href="https://amit641.github.io/pdfnova/">Docs</a> · <a href="#install">Install</a> · <a href="#quick-start">Quickstart</a> · <a href="#rendering">Rendering</a> · <a href="#search">Search</a> · <a href="#annotations-full-tier">Annotations</a> · <a href="#form-filling-full-tier">Forms</a> · <a href="#digital-signatures-full-tier">Signatures</a>
+  </p>
+</p>
 
-**PDFium-powered PDF library for JavaScript.** Chrome-grade rendering via WebAssembly with full TypeScript types. Supports text extraction, search, bookmarks, annotations, forms, and digital signatures.
+---
 
 Built on [`@embedpdf/pdfium`](https://www.npmjs.com/package/@embedpdf/pdfium) — the real PDFium engine (used in Chrome) compiled to WebAssembly.
 
-## Installation
+## Install
 
 ```bash
 npm install pdfnova

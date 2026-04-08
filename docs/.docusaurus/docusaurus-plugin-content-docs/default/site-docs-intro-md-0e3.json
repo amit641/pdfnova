@@ -1,0 +1,25 @@
+{
+  "id": "intro",
+  "title": "Introduction",
+  "description": "PDFium-powered PDF library for JavaScript & TypeScript.",
+  "source": "@site/docs/intro.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/pdfnova/",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amit641/pdfnova/tree/main/docs/docs/intro.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "slug": "/",
+    "sidebar_position": 1,
+    "title": "Introduction"
+  },
+  "sidebar": "docsSidebar",
+  "next": {
+    "title": "Getting Started",
+    "permalink": "/pdfnova/getting-started"
+  }
+}
