@@ -1,6 +1,6 @@
 {
   "name": "pdfnova",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "PDFium-powered PDF library for JavaScript. Chrome-grade rendering via WebAssembly with full TypeScript types. Supports text extraction, search, bookmarks, annotations, forms, and digital signatures.",
   "type": "module",
   "main": "./dist/index.cjs",
